@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="es">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aventura en la Isla</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* Menu Principal */
+    #main-menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100%;
+      padding: 30px 20px;
+      overflow-y: auto;
+    }
+
+    #game-title {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    #welcome-message {
+      font-size: 18px;
+      margin-bottom: 30px;
+      text-align: center;
+      max-width: 700px;
+    }
+
+    .menu-section {
+      margin: 15px 0;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.selected {
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+      transform: scale(1.05);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Player Setup Screen */
+    #player-setup {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100%;
+      padding: 30px 20px;
+      overflow-y: auto;
+    }
+
+    .setup-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .setup-title {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .players-setup-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 30px;
+    }
+
+    .player-setup-card {
+      padding: 25px;
+      border-radius: 15px;
+      border: 3px solid;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .player-card-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    .pawn-selection {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .pawn-option {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 3px solid;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+
+    .pawn-option:hover {
+      transform: scale(1.1);
+    }
+
+    .pawn-option.selected {
+      box-shadow: 0 0 0 4px rgba(255,215,0,0.8);
+      transform: scale(1.15);
+    }
+
+    .pawn-option.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Game Board */
+    #game-screen {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #game-header {
+      padding: 12px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    #game-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .info-item {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    #players-status {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .player-info {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .player-info.active {
+      box-shadow: 0 0 15px rgba(255,215,0,0.6);
+      transform: scale(1.05);
+    }
+
+    .player-pawn-icon {
+      width: 24px;
+      height: 24px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    #game-board-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    #board-grid {
+      display: grid;
+      grid-template-columns: repeat(13, 70px);
+      gap: 5px;
+      max-width: 100%;
+    }
+
+    .cell {
+      width: 70px;
+      height: 70px;
+      border: 3px solid;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .cell-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease;
+    }
+
+    .cell:hover .cell-overlay {
+      opacity: 0.7;
+    }
+
+    .cell-number {
+      position: absolute;
+      top: 3px;
+      left: 5px;
+      font-size: 11px;
+      font-weight: bold;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 2px 5px;
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    .players-on-cell {
+      position: absolute;
+      bottom: 3px;
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      justify-content: center;
+      z-index: 3;
+      padding: 0 2px;
+    }
+
+    .player-marker {
+      width: 20px;
+      height: 20px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      animation: bounce 0.5s ease;
+      filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .cell.highlight {
+      box-shadow: 0 0 20px rgba(255,215,0,0.9);
+      transform: scale(1.1);
+      z-index: 10;
+    }
+
+    #controls {
+      padding: 12px 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    #dice-display {
+      font-size: 48px;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    /* Items Panel */
+    #items-panel {
+      padding: 12px 20px;
+      border-top: 2px solid;
+      display: none;
+    }
+
+    .items-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .items-grid {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .item-box {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 500px;
+      max-height: 80%;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .modal-title {
+      font-size: 32px;
+      margin: 0 0 20px 0;
+      font-weight: bold;
+    }
+
+    .modal-message {
+      font-size: 18px;
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+
+    .card-display {
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      #board-grid {
+        grid-template-columns: repeat(13, 42px);
+        gap: 3px;
+      }
+
+      .cell {
+        width: 42px;
+        height: 42px;
+        font-size: 9px;
+      }
+
+      .cell-icon {
+        font-size: 16px;
+      }
+
+      .player-marker {
+        font-size: 14px;
+      }
+
+      #game-title {
+        font-size: 32px;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="app-wrapper"><!-- Main Menu -->
+   <div id="main-menu">
+    <h1 id="game-title">🏝️ Aventura en la Isla</h1>
+    <p id="welcome-message">¡Conquista la isla desde alta mar hasta la cima!</p>
+    <div class="menu-section">
+     <div class="section-title">
+      Modo de Juego
+     </div>
+     <div class="button-group"><button class="btn mode-btn" data-mode="individual">👤 Individual</button> <button class="btn mode-btn" data-mode="colectivo">👥 Colectivo</button>
+     </div>
+    </div>
+    <div class="menu-section">
+     <div class="section-title">
+      Tipo de Partida
+     </div>
+     <div class="button-group"><button class="btn type-btn" data-type="local">🏠 Local</button> <button class="btn type-btn" data-type="localStorage">💾 LocalStorage</button> <button class="btn type-btn" data-type="online">🌐 Online</button>
+     </div>
+    </div>
+    <div class="menu-section">
+     <div class="section-title">
+      Dificultad
+     </div>
+     <div class="button-group"><button class="btn difficulty-btn" data-difficulty="facil">😊 Fácil</button> <button class="btn difficulty-btn" data-difficulty="normal">😐 Normal</button> <button class="btn difficulty-btn" data-difficulty="dificil">😈 Difícil</button>
+     </div>
+    </div>
+    <div class="menu-section" id="players-selection">
+     <div class="section-title">
+      Número de Jugadores
+     </div>
+     <div class="button-group"><button class="btn players-btn" data-players="1">1</button> <button class="btn players-btn" data-players="2">2</button> <button class="btn players-btn" data-players="3">3</button> <button class="btn players-btn" data-players="4">4</button>
+     </div>
+    </div><button id="start-game-btn" class="btn" disabled>🎮 Iniciar Juego</button>
+   </div><!-- Game Screen -->
+   <div id="game-screen">
+    <header id="game-header">
+     <div id="game-info">
+      <div id="players-status"></div>
+      <div class="info-item">
+       Turno: <span id="turn-number">1</span>
+      </div><button id="back-menu-btn" class="btn">⬅️ Menú</button>
+     </div>
+    </header>
+    <div id="game-board-container">
+     <div id="board-grid"></div>
+    </div>
+    <div id="items-panel">
+     <div class="items-grid"></div>
+    </div>
+    <div id="controls"><button id="roll-dice-btn" class="btn">🎲 Lanzar Dado</button>
+     <div id="dice-display"></div><button id="end-turn-btn" class="btn hidden">✅ Terminar Turno</button>
+    </div>
+   </div><!-- Event Modal -->
+   <div id="event-modal" class="modal-overlay">
+    <div class="modal-content">
+     <h2 class="modal-title"></h2>
+     <div class="modal-message"></div><button id="event-ok-btn" class="btn">Continuar</button>
+    </div>
+   </div><!-- Win Modal -->
+   <div id="win-modal" class="modal-overlay">
+    <div class="modal-content">
+     <h2 class="modal-title">🏆 ¡Victoria!</h2>
+     <div class="modal-message"></div><button id="win-ok-btn" class="btn">Volver al Menú</button>
+    </div>
+   </div><!-- Card Modal -->
+   <div id="card-modal" class="modal-overlay">
+    <div class="modal-content">
+     <h2 class="modal-title">🃏 Carta Especial</h2>
+     <div class="card-display"></div>
+     <div class="modal-message"></div><button id="card-ok-btn" class="btn">Aceptar</button>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      background_color: "#1a1a2e",
+      header_color: "#16213e",
+      board_color: "#0f3460",
+      cell_water_color: "#4a90e2",
+      cell_land_color: "#90be6d",
+      cell_special_color: "#f9844a",
+      button_color: "#e94560",
+      text_color: "#eaeaea",
+      font_family: "Segoe UI",
+      font_size: 16,
+      game_title: "🏝️ Aventura en la Isla",
+      welcome_message: "¡Conquista la isla desde alta mar hasta la cima!"
+    };
+
+    let config = { ...defaultConfig };
+    let gameState = {
+      mode: null,
+      type: null,
+      difficulty: null,
+      numPlayers: 1,
+      currentPlayer: 0,
+      turnNumber: 1,
+      players: [],
+      gameStarted: false,
+      diceRolled: false,
+      waitingForAction: false
+    };
+
+    const CELL_DATA = {
+      1: { type: 'water', icon: '🌊', name: 'Alta Mar' },
+      2: { type: 'water', icon: '🌊', name: 'Alta Mar' },
+      3: { type: 'water', icon: '🌊', name: 'Alta Mar' },
+      4: { type: 'water', icon: '🌊', name: 'Alta Mar' },
+      5: { type: 'water', icon: '🌊', name: 'Alta Mar' },
+      6: { type: 'water', icon: '🌊', name: 'Alta Mar' },
+      7: { type: 'special', icon: '🚪', name: 'Entrada Isla', action: 'entrance' },
+      18: { type: 'special', icon: '🌉', name: 'Puente' },
+      19: { type: 'special', icon: '🌉', name: 'Puente' },
+      20: { type: 'special', icon: '⛰️', name: 'Entrada Caverna', action: 'entrance' },
+      21: { type: 'special', icon: '🔄', name: 'Túnel', jump: 59 },
+      26: { type: 'water', icon: '🌊', name: 'Mar' },
+      27: { type: 'water', icon: '🌊', name: 'Mar' },
+      28: { type: 'water', icon: '🌊', name: 'Mar' },
+      29: { type: 'water', icon: '🌊', name: 'Mar' },
+      30: { type: 'water', icon: '🌊', name: 'Mar' },
+      31: { type: 'special', icon: '🕳️', name: 'Túnel Mar' },
+      32: { type: 'water', icon: '🌊', name: 'Mar' },
+      33: { type: 'water', icon: '🌊', name: 'Mar' },
+      34: { type: 'water', icon: '🌊', name: 'Mar' },
+      35: { type: 'special', icon: '🏖️', name: 'Entrada Playa', action: 'entrance' },
+      36: { type: 'land', icon: '🏖️', name: 'Playa' },
+      37: { type: 'special', icon: '🔄', name: 'Atajo', jump: 73 },
+      38: { type: 'special', icon: '🕳️', name: 'Túnel Mar' },
+      39: { type: 'special', icon: '🦈', name: '¡Tiburón!', jump: 1 },
+      40: { type: 'special', icon: '🪨', name: 'Zona Rocosa', action: 'entrance' },
+      41: { type: 'land', icon: '🪜', name: 'Escaleras' },
+      42: { type: 'land', icon: '🪜', name: 'Escaleras' },
+      43: { type: 'land', icon: '🪜', name: 'Escaleras' },
+      44: { type: 'special', icon: '🔄', name: 'Atajo', jump: 77 },
+      45: { type: 'water', icon: '🌊', name: 'Mar' },
+      46: { type: 'water', icon: '🌊', name: 'Mar' },
+      47: { type: 'special', icon: '🕳️', name: 'Túnel Mar' },
+      48: { type: 'special', icon: '🌀', name: 'Tempestad', jump: 1 },
+      49: { type: 'special', icon: '🕳️', name: 'Túnel Mar' },
+      50: { type: 'special', icon: '🕳️', name: 'Túnel Mar' },
+      51: { type: 'water', icon: '🌊', name: 'Mar' },
+      52: { type: 'special', icon: '🏚️', name: 'Pueblo Abandonado', action: 'entrance' },
+      53: { type: 'water', icon: '🌊', name: 'Mar' },
+      54: { type: 'special', icon: '🔄', name: 'Corriente', jump: 26 },
+      55: { type: 'land', icon: '🏚️', name: 'Pueblo' },
+      56: { type: 'special', icon: '⚠️', name: 'Peligro', action: 'danger56' },
+      57: { type: 'special', icon: '🪜', name: 'Escaleras', jump: 87 },
+      58: { type: 'land', icon: '🌳', name: 'Tierra' },
+      69: { type: 'land', icon: '🌳', name: 'Tierra' },
+      70: { type: 'special', icon: '⚠️', name: '¡Caída!', jump: 33 },
+      71: { type: 'special', icon: '⚠️', name: '¡Caída!', jump: 33 },
+      72: { type: 'land', icon: '🌳', name: 'Tierra' },
+      73: { type: 'land', icon: '🌳', name: 'Tierra' },
+      74: { type: 'special', icon: '⛲', name: 'Fuente', action: 'water' },
+      75: { type: 'special', icon: '🕳️', name: 'Túnel Terrestre' },
+      77: { type: 'land', icon: '🌳', name: 'Tierra' },
+      81: { type: 'special', icon: '🕳️', name: 'Túnel' },
+      82: { type: 'special', icon: '🌉', name: 'Puente' },
+      83: { type: 'special', icon: '⛲', name: 'Fuente', action: 'water' },
+      84: { type: 'special', icon: '⛰️', name: 'Despeñadero', jump: 48 },
+      87: { type: 'land', icon: '🌳', name: 'Tierra' },
+      88: { type: 'special', icon: '🕳️', name: 'Túnel' },
+      89: { type: 'water', icon: '💧', name: 'Río' },
+      92: { type: 'land', icon: '🌳', name: 'Tierra' },
+      96: { type: 'special', icon: '🕳️', name: 'Túnel Terrestre' },
+      99: { type: 'special', icon: '⚠️', name: 'Camino Caído', action: 'danger99' },
+      100: { type: 'special', icon: '⚠️', name: 'Camino Caído', action: 'danger99' },
+      102: { type: 'special', icon: '🕳️', name: 'Túnel' },
+      103: { type: 'water', icon: '💧', name: 'Río' },
+      104: { type: 'water', icon: '💧', name: 'Río' },
+      106: { type: 'special', icon: '⛰️', name: 'Despeñadero', jump: 87 },
+      108: { type: 'special', icon: '🕳️', name: 'Foso Túneles' },
+      109: { type: 'water', icon: '💧', name: 'Río' },
+      113: { type: 'water', icon: '💧', name: 'Río' },
+      115: { type: 'special', icon: '⛰️', name: 'Despeñadero', jump: 92 },
+      118: { type: 'special', icon: '🕳️', name: 'Foso Túneles' },
+      121: { type: 'special', icon: '💦', name: 'Naciente Agua', action: 'water' },
+      125: { type: 'special', icon: '🕳️', name: 'Foso Túneles' },
+      130: { type: 'special', icon: '🏆', name: '¡CIMA!' }
+    };
+
+    // Rellenar casillas normales
+    for (let i = 1; i <= 130; i++) {
+      if (!CELL_DATA[i]) {
+        if (i >= 1 && i <= 54) {
+          CELL_DATA[i] = i <= 34 ? 
+            { type: 'water', icon: '🌊', name: 'Mar' } : 
+            { type: 'land', icon: '🌳', name: 'Tierra' };
+        } else {
+          CELL_DATA[i] = { type: 'land', icon: '🌳', name: 'Tierra' };
+        }
+      }
+    }
+
+    const CARDS = {
+      tiempo: [
+        { type: 'tiempo', text: 'Sol brillante', effect: { hunting: 1 } },
+        { type: 'tiempo', text: 'Lluvia intensa', effect: { water: 1, food: -1 } },
+        { type: 'tiempo', text: 'Tormenta', effect: { shelter: 1 } },
+        { type: 'tiempo', text: 'Noche fría', effect: { clothing: 1 } },
+        { type: 'tiempo', text: 'Niebla densa', effect: { hunting: -1 } }
+      ],
+      animales: [
+        { type: 'animal', text: 'Conejo salvaje', effect: { food: 2, hunting: 1 } },
+        { type: 'animal', text: 'Jabalí peligroso', effect: { hunting: -2, clothing: -1 } },
+        { type: 'animal', text: 'Peces en el río', effect: { food: 1, water: 1 } },
+        { type: 'animal', text: 'Serpiente venenosa', effect: { hunting: -1 } },
+        { type: 'animal', text: 'Aves migratorias', effect: { food: 1 } }
+      ],
+      plantas: [
+        { type: 'planta', text: 'Frutas comestibles', effect: { food: 2 } },
+        { type: 'planta', text: 'Planta medicinal', effect: { water: 1, food: 1 } },
+        { type: 'planta', text: 'Planta venenosa', effect: { food: -2 } },
+        { type: 'planta', text: 'Bambú resistente', effect: { hunting: 1, shelter: 1 } },
+        { type: 'planta', text: 'Algas nutritivas', effect: { food: 1 } }
+      ]
+    };
+
+    function initializePlayers(num) {
+      const icons = ['🔴', '🔵', '🟢', '🟡'];
+      const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'];
+      gameState.players = [];
+      
+      for (let i = 0; i < num; i++) {
+        gameState.players.push({
+          id: i,
+          icon: icons[i],
+          color: colors[i],
+          position: 1,
+          items: { hunting: 0, water: 0, food: 0, clothing: 0, shelter: 0 }
+        });
+      }
+    }
+
+    function createBoard() {
+      const boardGrid = document.getElementById('board-grid');
+      boardGrid.innerHTML = '';
+      
+      for (let i = 1; i <= 130; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.position = i;
+        
+        const cellData = CELL_DATA[i];
+        cell.innerHTML = `
+          <span class="cell-number">${i}</span>
+          <span class="cell-icon">${cellData.icon}</span>
+          <div class="players-on-cell"></div>
+        `;
+        
+        boardGrid.appendChild(cell);
+      }
+      
+      updateBoard();
+    }
+
+    function updateBoard() {
+      document.querySelectorAll('.players-on-cell').forEach(el => el.innerHTML = '');
+      
+      gameState.players.forEach(player => {
+        const cell = document.querySelector(`[data-position="${player.position}"] .players-on-cell`);
+        if (cell) {
+          const marker = document.createElement('span');
+          marker.className = 'player-marker';
+          marker.textContent = player.icon;
+          cell.appendChild(marker);
+        }
+      });
+    }
+
+    function updatePlayersStatus() {
+      const statusDiv = document.getElementById('players-status');
+      statusDiv.innerHTML = '';
+      
+      gameState.players.forEach((player, index) => {
+        const playerDiv = document.createElement('div');
+        playerDiv.className = 'player-info';
+        if (index === gameState.currentPlayer) {
+          playerDiv.classList.add('active');
+        }
+        playerDiv.style.backgroundColor = player.color + '40';
+        playerDiv.style.borderColor = player.color;
+        playerDiv.textContent = `${player.icon} Pos: ${player.position}`;
+        statusDiv.appendChild(playerDiv);
+      });
+    }
+
+    function updateItemsPanel() {
+      const itemsPanel = document.getElementById('items-panel');
+      const itemsGrid = itemsPanel.querySelector('.items-grid');
+      
+      if (gameState.difficulty === 'dificil' || gameState.difficulty === 'normal') {
+        itemsPanel.style.display = 'block';
+        const currentPlayer = gameState.players[gameState.currentPlayer];
+        itemsGrid.innerHTML = `
+          <div class="item-box">🏹 Caza: ${currentPlayer.items.hunting}</div>
+          <div class="item-box">💧 Agua: ${currentPlayer.items.water}</div>
+          <div class="item-box">🍖 Comida: ${currentPlayer.items.food}</div>
+          <div class="item-box">👕 Ropa: ${currentPlayer.items.clothing}</div>
+          ${gameState.difficulty === 'dificil' ? `<div class="item-box">🏠 Refugio: ${currentPlayer.items.shelter}</div>` : ''}
+        `;
+      } else {
+        itemsPanel.style.display = 'none';
+      }
+    }
+
+    function rollDice() {
+      return Math.floor(Math.random() * 6) + 1;
+    }
+
+    function showModal(modalId, title, message) {
+      const modal = document.getElementById(modalId);
+      modal.querySelector('.modal-title').textContent = title;
+      modal.querySelector('.modal-message').innerHTML = message;
+      modal.style.display = 'flex';
+    }
+
+    function hideModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    function drawCard() {
+      const cardTypes = ['tiempo', 'animales', 'plantas'];
+      const randomType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+      const cards = CARDS[randomType];
+      return cards[Math.floor(Math.random() * cards.length)];
+    }
+
+    function applyCardEffect(card) {
+      const currentPlayer = gameState.players[gameState.currentPlayer];
+      let message = `<strong>${card.text}</strong><br><br>`;
+      
+      for (const [item, value] of Object.entries(card.effect)) {
+        currentPlayer.items[item] = Math.max(0, currentPlayer.items[item] + value);
+        const icon = { hunting: '🏹', water: '💧', food: '🍖', clothing: '👕', shelter: '🏠' }[item];
+        message += `${icon} ${item}: ${value > 0 ? '+' : ''}${value}<br>`;
+      }
+      
+      return message;
+    }
+
+    function handleCellAction(position) {
+      const cellData = CELL_DATA[position];
+      const currentPlayer = gameState.players[gameState.currentPlayer];
+      
+      if (cellData.jump) {
+        const newPos = cellData.jump;
+        currentPlayer.position = newPos;
+        showModal('event-modal', `${cellData.icon} ${cellData.name}`, 
+          `¡Has sido transportado a la casilla ${newPos}!`);
+        updateBoard();
+        return true;
+      }
+      
+      if (cellData.action === 'water') {
+        if (gameState.difficulty !== 'facil') {
+          currentPlayer.items.water++;
+          showModal('event-modal', '💧 Agua Fresca', '¡Has conseguido +1 agua!');
+          updateItemsPanel();
+          return true;
+        }
+      }
+      
+      if (cellData.action === 'danger56') {
+        const dice = rollDice();
+        if (dice >= 4) {
+          currentPlayer.position = 57;
+          showModal('event-modal', '✅ ¡Salvado!', 
+            `Sacaste un ${dice}. ¡Subes a la casilla 57!`);
+        } else {
+          currentPlayer.position = 58;
+          showModal('event-modal', '❌ ¡Caída!', 
+            `Sacaste un ${dice}. Caes a la casilla 58.`);
+        }
+        updateBoard();
+        return true;
+      }
+      
+      if (cellData.action === 'danger99') {
+        const target = Math.random() > 0.5 ? 69 : 72;
+        currentPlayer.position = target;
+        showModal('event-modal', '⚠️ Camino Caído', 
+          `¡El camino se derrumba! Caes a la casilla ${target}.`);
+        updateBoard();
+        return true;
+      }
+      
+      if (gameState.difficulty === 'normal' && Math.random() < 0.3) {
+        const card = drawCard();
+        const cardModal = document.getElementById('card-modal');
+        cardModal.querySelector('.card-display').textContent = `🃏 ${card.type.toUpperCase()}`;
+        cardModal.querySelector('.modal-message').innerHTML = applyCardEffect(card);
+        cardModal.style.display = 'flex';
+        updateItemsPanel();
+        return true;
+      }
+      
+      if (gameState.difficulty === 'dificil' && Math.random() < 0.5) {
+        const card = drawCard();
+        const cardModal = document.getElementById('card-modal');
+        cardModal.querySelector('.card-display').textContent = `🃏 ${card.type.toUpperCase()}`;
+        cardModal.querySelector('.modal-message').innerHTML = applyCardEffect(card);
+        cardModal.style.display = 'flex';
+        updateItemsPanel();
+        return true;
+      }
+      
+      return false;
+    }
+
+    function movePlayer(steps) {
+      const currentPlayer = gameState.players[gameState.currentPlayer];
+      let newPosition = currentPlayer.position + steps;
+      
+      if (newPosition > 130) {
+        newPosition = 117;
+        showModal('event-modal', '🎿 Tirolina', 
+          '¡Te pasaste de la meta! Vuelves a la casilla 117 por la tirolina.');
+      } else if (newPosition === 130) {
+        currentPlayer.position = 130;
+        updateBoard();
+        checkWinCondition();
+        return;
+      }
+      
+      currentPlayer.position = newPosition;
+      updateBoard();
+      updatePlayersStatus();
+      
+      const cell = document.querySelector(`[data-position="${newPosition}"]`);
+      cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      const hasAction = handleCellAction(newPosition);
+      
+      if (!hasAction && gameState.mode === 'colectivo') {
+        document.getElementById('end-turn-btn').classList.remove('hidden');
+      } else if (gameState.mode === 'individual') {
+        gameState.diceRolled = false;
+      }
+    }
+
+    function checkWinCondition() {
+      const currentPlayer = gameState.players[gameState.currentPlayer];
+      
+      if (currentPlayer.position === 130) {
+        let canWin = true;
+        let message = `¡El jugador ${currentPlayer.icon} ha llegado a la cima!<br><br>`;
+        
+        if (gameState.difficulty === 'normal') {
+          const required = { hunting: 1, water: 2, food: 2, clothing: 1 };
+          message += '<strong>Recursos necesarios:</strong><br>';
+          for (const [item, need] of Object.entries(required)) {
+            const has = currentPlayer.items[item];
+            const icon = { hunting: '🏹', water: '💧', food: '🍖', clothing: '👕' }[item];
+            message += `${icon} ${item}: ${has}/${need} ${has >= need ? '✅' : '❌'}<br>`;
+            if (has < need) canWin = false;
+          }
+        } else if (gameState.difficulty === 'dificil') {
+          const required = { hunting: 2, water: 3, food: 3, clothing: 2, shelter: 1 };
+          message += '<strong>Recursos necesarios:</strong><br>';
+          for (const [item, need] of Object.entries(required)) {
+            const has = currentPlayer.items[item];
+            const icon = { hunting: '🏹', water: '💧', food: '🍖', clothing: '👕', shelter: '🏠' }[item];
+            message += `${icon} ${item}: ${has}/${need} ${has >= need ? '✅' : '❌'}<br>`;
+            if (has < need) canWin = false;
+          }
+        }
+        
+        if (canWin) {
+          showModal('win-modal', '🏆 ¡VICTORIA!', message + '<br><strong>¡Has conquistado la isla!</strong>');
+        } else {
+          showModal('event-modal', '⚠️ Recursos Insuficientes', 
+            message + '<br>Debes conseguir más recursos antes de ganar.');
+          currentPlayer.position = 129;
+          updateBoard();
+        }
+      }
+    }
+
+    function nextTurn() {
+      gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+      if (gameState.currentPlayer === 0) {
+        gameState.turnNumber++;
+        document.getElementById('turn-number').textContent = gameState.turnNumber;
+      }
+      gameState.diceRolled = false;
+      document.getElementById('end-turn-btn').classList.add('hidden');
+      updatePlayersStatus();
+      updateItemsPanel();
+    }
+
+    // Menu event listeners
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        gameState.mode = this.dataset.mode;
+        checkStartButton();
+      });
+    });
+
+    document.querySelectorAll('.type-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        gameState.type = this.dataset.type;
+        checkStartButton();
+      });
+    });
+
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        gameState.difficulty = this.dataset.difficulty;
+        checkStartButton();
+      });
+    });
+
+    document.querySelectorAll('.players-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.players-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        gameState.numPlayers = parseInt(this.dataset.players);
+        checkStartButton();
+      });
+    });
+
+    function checkStartButton() {
+      const canStart = gameState.mode && gameState.type && gameState.difficulty && gameState.numPlayers;
+      document.getElementById('start-game-btn').disabled = !canStart;
+    }
+
+    document.getElementById('start-game-btn').addEventListener('click', function() {
+      initializePlayers(gameState.numPlayers);
+      gameState.gameStarted = true;
+      gameState.currentPlayer = 0;
+      gameState.turnNumber = 1;
+      
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'flex';
+      
+      createBoard();
+      updatePlayersStatus();
+      updateItemsPanel();
+    });
+
+    document.getElementById('roll-dice-btn').addEventListener('click', function() {
+      if (gameState.diceRolled) return;
+      
+      gameState.diceRolled = true;
+      const diceValue = rollDice();
+      
+      const diceDisplay = document.getElementById('dice-display');
+      diceDisplay.textContent = `🎲 ${diceValue}`;
+      
+      setTimeout(() => {
+        movePlayer(diceValue);
+        diceDisplay.textContent = '';
+        
+        if (gameState.mode === 'individual') {
+          gameState.diceRolled = false;
+        }
+      }, 600);
+    });
+
+    document.getElementById('end-turn-btn').addEventListener('click', function() {
+      nextTurn();
+    });
+
+    document.getElementById('back-menu-btn').addEventListener('click', function() {
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('main-menu').style.display = 'flex';
+      gameState.gameStarted = false;
+    });
+
+    document.getElementById('event-ok-btn').addEventListener('click', function() {
+      hideModal('event-modal');
+      if (gameState.mode === 'colectivo') {
+        document.getElementById('end-turn-btn').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('card-ok-btn').addEventListener('click', function() {
+      hideModal('card-modal');
+      if (gameState.mode === 'colectivo') {
+        document.getElementById('end-turn-btn').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('win-ok-btn').addEventListener('click', function() {
+      hideModal('win-modal');
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('main-menu').style.display = 'flex';
+      gameState.gameStarted = false;
+    });
+
+    // Element SDK
+    async function onConfigChange(newConfig) {
+      const baseSize = newConfig.font_size || defaultConfig.font_size;
+      const customFont = newConfig.font_family || defaultConfig.font_family;
+      const baseFontStack = 'Tahoma, Geneva, Verdana, sans-serif';
+      
+      document.body.style.background = newConfig.background_color || defaultConfig.background_color;
+      document.body.style.color = newConfig.text_color || defaultConfig.text_color;
+      
+      const header = document.getElementById('game-header');
+      header.style.background = newConfig.header_color || defaultConfig.header_color;
+      header.style.borderBottom = `2px solid ${newConfig.button_color || defaultConfig.button_color}`;
+      
+      const boardContainer = document.getElementById('game-board-container');
+      boardContainer.style.background = newConfig.board_color || defaultConfig.board_color;
+      
+      const itemsPanel = document.getElementById('items-panel');
+      itemsPanel.style.background = newConfig.header_color || defaultConfig.header_color;
+      itemsPanel.style.borderTopColor = newConfig.button_color || defaultConfig.button_color;
+      
+      const controls = document.getElementById('controls');
+      controls.style.background = newConfig.header_color || defaultConfig.header_color;
+      
+      const cells = document.querySelectorAll('.cell');
+      cells.forEach(cell => {
+        const pos = parseInt(cell.dataset.position);
+        const cellData = CELL_DATA[pos];
+        if (cellData.type === 'water') {
+          cell.style.background = newConfig.cell_water_color || defaultConfig.cell_water_color;
+          cell.style.borderColor = newConfig.cell_water_color || defaultConfig.cell_water_color;
+        } else if (cellData.type === 'special') {
+          cell.style.background = newConfig.cell_special_color || defaultConfig.cell_special_color;
+          cell.style.borderColor = newConfig.cell_special_color || defaultConfig.cell_special_color;
+        } else {
+          cell.style.background = newConfig.cell_land_color || defaultConfig.cell_land_color;
+          cell.style.borderColor = newConfig.cell_land_color || defaultConfig.cell_land_color;
+        }
+        cell.style.color = newConfig.text_color || defaultConfig.text_color;
+      });
+      
+      const buttons = document.querySelectorAll('.btn');
+      buttons.forEach(btn => {
+        btn.style.background = newConfig.button_color || defaultConfig.button_color;
+        btn.style.color = newConfig.text_color || defaultConfig.text_color;
+        btn.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        btn.style.fontSize = `${baseSize * 1.125}px`;
+      });
+      
+      document.getElementById('game-title').textContent = newConfig.game_title || defaultConfig.game_title;
+      document.getElementById('game-title').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.getElementById('game-title').style.fontSize = `${baseSize * 3}px`;
+      
+      document.getElementById('welcome-message').textContent = newConfig.welcome_message || defaultConfig.welcome_message;
+      document.getElementById('welcome-message').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.getElementById('welcome-message').style.fontSize = `${baseSize * 1.25}px`;
+      
+      document.querySelectorAll('.section-title').forEach(el => {
+        el.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        el.style.fontSize = `${baseSize * 1.5}px`;
+        el.style.color = newConfig.text_color || defaultConfig.text_color;
+      });
+      
+      document.querySelectorAll('.modal-content').forEach(modal => {
+        modal.style.background = newConfig.header_color || defaultConfig.header_color;
+        modal.style.color = newConfig.text_color || defaultConfig.text_color;
+      });
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.header_color || defaultConfig.header_color,
+              set: (value) => {
+                config.header_color = value;
+                window.elementSdk.setConfig({ header_color: value });
+              }
+            },
+            {
+              get: () => config.cell_land_color || defaultConfig.cell_land_color,
+              set: (value) => {
+                config.cell_land_color = value;
+                window.elementSdk.setConfig({ cell_land_color: value });
+              }
+            },
+            {
+              get: () => config.button_color || defaultConfig.button_color,
+              set: (value) => {
+                config.button_color = value;
+                window.elementSdk.setConfig({ button_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["game_title", config.game_title || defaultConfig.game_title],
+          ["welcome_message", config.welcome_message || defaultConfig.welcome_message]
+        ])
+      });
+    }
+
+    onConfigChange(config);
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c718c1dc0fecbb3',t:'MTc2OTk0OTk0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
