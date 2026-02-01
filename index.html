@@ -755,18 +755,23 @@
     }
 
     function updateBoard() {
-      document.querySelectorAll('.players-on-cell').forEach(el => el.innerHTML = '');
-      
-      gameState.players.forEach(player => {
-        const cell = document.querySelector(`[data-position="${player.position}"] .players-on-cell`);
-        if (cell) {
-          const marker = document.createElement('span');
-          marker.className = 'player-marker';
-          marker.textContent = player.icon;
-          cell.appendChild(marker);
-        }
-      });
+  document.querySelectorAll('.players-on-cell').forEach(el => el.innerHTML = '');
+
+  gameState.players.forEach(player => {
+    const cellContainer = document.querySelector(
+      `[data-position="${player.position}"] .players-on-cell`
+    );
+
+    if (cellContainer) {
+      const marker = document.createElement('div');
+      marker.className = 'player-marker';
+      marker.style.backgroundImage = `url(${player.pawn})`;
+      marker.title = player.name;
+
+      cellContainer.appendChild(marker);
     }
+  });
+}
 
     function updatePlayersStatus() {
       const statusDiv = document.getElementById('players-status');
@@ -780,7 +785,16 @@
         }
         playerDiv.style.backgroundColor = player.color + '40';
         playerDiv.style.borderColor = player.color;
-        playerDiv.textContent = `${player.icon} Pos: ${player.position}`;
+        const icon = document.createElement('div');
+        icon.className = 'player-pawn-icon';
+        icon.style.backgroundImage = `url(${player.pawn})`;
+
+        const text = document.createElement('span');
+        text.textContent = `${player.name} · Pos: ${player.position}`;
+
+        playerDiv.appendChild(icon);
+        playerDiv.appendChild(text);
+
         statusDiv.appendChild(playerDiv);
       });
     }
