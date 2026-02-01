@@ -699,20 +699,38 @@
     };
 
     function initializePlayers(num) {
-      const icons = ['🔴', '🔵', '🟢', '🟡'];
-      const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'];
-      gameState.players = [];
-      
-      for (let i = 0; i < num; i++) {
-        gameState.players.push({
-          id: i,
-          icon: icons[i],
-          color: colors[i],
-          position: 1,
-          items: { hunting: 0, water: 0, food: 0, clothing: 0, shelter: 0 }
-        });
-      }
+  const pawns = [
+    'peon-1/peon.png',
+    'peon-2/peon.png',
+    'peon-3/peon.png',
+    'peon-4/peon.png'
+  ];
+
+  const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'];
+  gameState.players = [];
+
+  for (let i = 0; i < num; i++) {
+    let name = prompt(`Nombre del jugador ${i + 1}:`);
+    if (!name || name.trim() === '') {
+      name = `Jugador ${i + 1}`;
     }
+
+    gameState.players.push({
+      id: i,
+      name: name.trim(),
+      pawn: pawns[i],
+      color: colors[i],
+      position: 1,
+      items: {
+        hunting: 0,
+        water: 0,
+        food: 0,
+        clothing: 0,
+        shelter: 0
+      }
+    });
+  }
+}
 
     function createBoard() {
       const boardGrid = document.getElementById('board-grid');
