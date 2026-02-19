@@ -186,7 +186,7 @@
     }
 
     function loadGameState() {
-      const saved = localStorage.getItem('rutaVitrasa_gameState');
+      const saved = localStorage.getItem('laIsla_gameState');
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -199,11 +199,11 @@
     }
 
     function hasAutoSave() {
-      return localStorage.getItem('rutaVitrasa_gameState') !== null;
+      return localStorage.getItem('laIsla_gameState') !== null;
     }
 
     function deleteAutoSave() {
-      localStorage.removeItem('rutaVitrasa_gameState');
+      localStorage.removeItem('laIsla_gameState');
     }
   </script>
   <div id="app" class="w-full h-full flex flex-col">
@@ -407,7 +407,7 @@
       const grid = document.getElementById('route-grid');
       grid.innerHTML = '';
 
-      for (let i = 1; i <= 63; i++) {
+      for (let i = 1; i <= 130; i++) {
         const isSpecial = isSpecialPosition(i);
         const line = getLineInfo(i);
 
@@ -579,27 +579,38 @@
           gameState.turnsToSkip[player.id] = special.turns;
           break;
 
-        case 'bonus':
-          showMessage(`${special.name} ${special.message}`);
-          player.position = Math.min(player.position + special.jumps, 130);
-          updateDisplay();
-          saveGameState();
-          await new Promise(r => setTimeout(r, 600));
-          break;
+         case 'goto': // NUEVO: casillas que envían a otra posición
+           showMessage(`${special.name} ${special.message}`);
+           player.position = special.target; // la casilla a la que va
+           updateDisplay();
+           saveGameState();
+           await new Promise(r => setTimeout(r, 600));
+           break;
 
-        case 'again':
-          showMessage(`${special.name} ${special.message}`);
-          gameState.canRoll = true;
-          gameState.diceRolled = false;
-          document.getElementById('end-turn-btn').disabled = true;
-          break;
+        case 'tunnel':
+           // Casillas que van a otra posición
+        if (special.parity) { // Si tiene propiedad 'parity'
+         if (player.position % 2 === 0) {
+           player.position = special.even; // destino si es par
+           showMessage(`${special.name} ${special.message} (casilla par)`);
+         } else {
+           player.position = special.odd;  // destino si es impar
+           showMessage(`${special.name} ${special.message} (casilla impar)`);
+         }
+         } else {
+           player.position = special.target; // destino fijo
+           showMessage(`${special.name} ${special.message}`);
+         }
+           updateDisplay();
+           saveGameState();
+           await new Promise(r => setTimeout(r, 600));
+           break;
 
-        case 'final':
+          case 'final':
           showMessage(`🏁 ${special.message}`);
           break;
       }
     }
-
     function endTurn() {
       gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.numPlayers;
       gameState.canRoll = true;
