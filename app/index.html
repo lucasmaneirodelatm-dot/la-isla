@@ -133,24 +133,12 @@
         { name: 'Parada 45', icon: '🚌', image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-oca/static/_png/295.png' }
       ],
       specialEvents: [
-        { position: 2, type: 'bonus', jumps: 1, name: '🎫', message: 'Primer viaje! Avanzas 1' },
-        { position: 5, type: 'delay', turns: 1, name: '🚨', message: 'Atasco. Esperas 1 turno' },
-        { position: 8, type: 'again', name: '🍀', message: 'Tira de nuevo!' },
-        { position: 10, type: 'bonus', jumps: 2, name: '💨', message: 'Avanzas 2!' },
-        { position: 12, type: 'delay', turns: 1, name: '📍', message: 'Parada técnica. Esperas 1' },
-        { position: 15, type: 'delay', turns: 2, name: '🔧', message: 'Mantenimiento. Esperas 2' },
-        { position: 20, type: 'bonus', jumps: 3, name: '⭐', message: 'Avanzas 3!' },
-        { position: 22, type: 'bonus', jumps: 2, name: '⚡', message: 'Rápido! Avanzas 2' },
-        { position: 25, type: 'again', name: '👵', message: 'Tira de nuevo!' },
-        { position: 30, type: 'delay', turns: 1, name: '🚧', message: 'Desvío. Esperas 1' },
-        { position: 35, type: 'bonus', jumps: 4, name: '🏖️', message: 'Avanzas 4!' },
-        { position: 40, type: 'again', name: '🎉', message: 'Tira de nuevo!' },
-        { position: 45, type: 'delay', turns: 2, name: '⚠️', message: 'Obras. Esperas 2' },
-        { position: 50, type: 'bonus', jumps: 2, name: '🚀', message: 'Avanzas 2!' },
-        { position: 55, type: 'again', name: '🌟', message: 'Tira de nuevo!' },
-        { position: 58, type: 'delay', turns: 1, name: '🚨', message: 'Alerta. Esperas 1' },
-        { position: 60, type: 'bonus', jumps: 3, name: '💫', message: 'Avanzas 3!' },
-        { position: 63, type: 'final', name: '🏁', message: '¡Cocheras Vitrasa!' }
+        { position: 5, type: 'delay', turns: 1, name: '⏱️', message: 'Esperas 1 turno' },
+        { position: 7, type: 'goto', target: 8, name: '🏝️', message: 'Entras a isla pequeña' },
+        { position: 14, type: 'delay', turns: 2, name: '⏱️', message: 'Esperas 2 turnos' },
+        { position: 20, type: 'goto', target: 22, name: '🚪', message: 'Entras en la Caberna' },
+        { position: 31, type: 'tunnel', parity: true, even: 20, odd: 10, name: '🔀', message: 'Par o impar: toma la ruta' },
+        { position: 130, type: 'final', name: '🏁', message: '¡Has llegado a la meta!' }
       ],
       playerAvatars: [
         { emoji: '🚌', name: 'L16', image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-oca/static/_svg/400.svg' },
@@ -523,6 +511,11 @@
       const exceso = newPosition - 7;
       newPosition = 26 + exceso;
       showMessage(`🔙 ¡Te pasaste!¡No has entrado en la isla! Continuas por 26 y avanzas ${exceso} más → parada ${newPosition}`);
+      },
+      if (newPosition > 21) {
+      const exceso = newPosition - 21;
+      newPosition = 60 + exceso;
+      showMessage(`Continuas por 60 y avanzas ${exceso} más → parada ${newPosition}`);
       },
       if (newPosition > 35) {
       const exceso = newPosition - 35;
