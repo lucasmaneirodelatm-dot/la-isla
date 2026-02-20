@@ -166,7 +166,7 @@
     // ========== FIN BASE DE DATOS ==========
 
     function getLineInfo(position) {
-      const lineIndex = (position - 1) % 45;
+      const lineIndex = (position - 1) % DATABASE.lines.length;
       return DATABASE.lines[lineIndex];
     }
 
@@ -227,7 +227,7 @@
       <div class="config-label">
        ¿Cuántos pasajeros emprenderán un viaje lleno de sorpresas?
       </div>
-      <div class="num-players-grid"></button> <button class="num-player-btn" onclick="selectPlayers(1)" data-players="1">1</button><button class="num-player-btn" onclick="selectPlayers(2)" data-players="2">2</button> <button class="num-player-btn" onclick="selectPlayers(3)" data-players="3">3</button> <button class="num-player-btn" onclick="selectPlayers(4)" data-players="4">4</button> <button class="num-player-btn" onclick="selectPlayers(5)" data-players="5">5</button> <button class="num-player-btn" onclick="selectPlayers(6)" data-players="6">6</button>
+      <div class="num-players-grid"><button class="num-player-btn" onclick="selectPlayers(1)" data-players="1">1</button><button class="num-player-btn" onclick="selectPlayers(2)" data-players="2">2</button> <button class="num-player-btn" onclick="selectPlayers(3)" data-players="3">3</button> <button class="num-player-btn" onclick="selectPlayers(4)" data-players="4">4</button> <button class="num-player-btn" onclick="selectPlayers(5)" data-players="5">5</button> <button class="num-player-btn" onclick="selectPlayers(6)" data-players="6">6</button>
       </div>
      </div>
      <div id="players-config-container"></div><button class="btn-start" onclick="startGame()">🏝️ ¡Iniciar Viaje Por La Isla!</button>
