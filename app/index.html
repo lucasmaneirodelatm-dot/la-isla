@@ -149,6 +149,22 @@
         { position: 38, type: 'tunnel', parity: true, even: 20, odd: 10, name: '🔀', message: 'Par o impar: toma la ruta' },
         { position: 40, type: 'goto', target: 41, name: '🧗', message: 'Entras por Acantilado' },
         { position: 52, type: 'goto', target: 55, name: '🏚️', message: 'Entras por Pueblo Abandonado' },
+        { position: 56, type: 'goto', target: 57, name: '🌊', message: 'Continua por casilla 57' },
+        { position: 72, type: 'goto', target: 33, name: '💥', message: 'Camino derrumbado, caes al Mar (33).' },
+        { position: 73, type: 'goto', target: 33, name: '💥', message: 'Camino derrumbado, caes al Mar (33).' },
+        { position: 75, type: 'tunnel', parity: true, even: 81, odd: 88, name: '🔀', message: 'Par o impar: toma la ruta' },
+        { position: 81, type: 'tunnel', parity: true, even: 75, odd: 88, name: '🔀', message: 'Par o impar: toma la ruta' },
+        { position: 84, type: 'goto', target: 47, name: '💥', message: 'Despeñadero, a 47.' },
+        { position: 88, type: 'tunnel', parity: true, even: 81, odd: 75, name: '🔀', message: 'Par o impar: toma la ruta' },
+        { position: 96, type: 'tunnel', parity: true, even: 102, odd: 96, name: '🔀', message: 'Par o impar: toma la ruta' },
+        { position: 99, type: 'goto', target: 71, name: '💥', message: 'Camino derrumbado, caes al 71.' },
+        { position: 100, type: 'goto', target: 74, name: '💥', message: 'Camino derrumbado, caes al 74.' },
+        { position: 102, type: 'tunnel', parity: true, even: 102, odd: 96, name: '🔀', message: 'Par o impar: toma la ruta' },
+        { position: 105, type: 'goto', target: 77, name: '💥', message: 'Despeñadero, a 77.' },
+        { position: 108, type: 'tunnel', parity: true, even: 81, odd: 88, name: '🕳️', message: 'Foso' },
+        { position: 115, type: 'goto', target: 92, name: '💥', message: 'Despeñadero, a 92.' },
+        { position: 120, type: 'tunnel', parity: true, even: 75, odd: 88, name: '🕳️', message: 'Foso' },
+        { position: 125, type: 'tunnel', parity: true, even: 96, odd: 102, name: '🕳️', message: 'Foso' },
         { position: 130, type: 'final', name: '🏁', message: '¡Has llegado a la meta!' }
       ],
       playerAvatars: [
@@ -542,6 +558,11 @@
       const exceso = newPosition - 54;
       newPosition = 26 + exceso;
       showMessage(`🔄 Continuas por 26 y avanzas ${exceso} más → parada ${newPosition}`);
+      }
+      if (newPosition > 57) {
+      const exceso = newPosition - 57;
+      newPosition = 87 + exceso;
+      showMessage(`Subes escaleras de 57 que conducen a 87+ ${exceso} te vas a  → ${newPosition}`);
       }
       if (newPosition > 130) {
       newPosition = 117;
