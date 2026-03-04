@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Isla</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        * {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .board-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+            background: rgba(0,0,0,0.1);
+            padding: 12px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .board-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #1e3c72;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: visible;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .board-cell:hover {
+            transform: scale(1.05);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .board-cell.special {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-color: #ffd700;
+        }
+
+        .player-token {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 6px rgba(0,0,0,0.6);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 10;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .message-box {
+            background: rgba(255,255,255,0.95);
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            animation: slideIn 0.3s ease-out;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 2px solid #ff9800;
+        }
+
+        .dice:hover:not(:disabled) {
+            transform: scale(1.1);
+        }
+
+        .dice:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .dice:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .player-card {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: all 0.2s;
+            border-left: 4px solid;
+            gap: 12px;
+        }
+
+        .player-card.active {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .player-peon-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid white;
+            flex-shrink: 0;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 20px;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .setup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .skip-indicator {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .color-1 { background: #ff6b6b; }
+        .color-2 { background: #4ecdc4; }
+        .color-3 { background: #45b7d1; }
+        .color-4 { background: #f9ca24; }
+        .color-5 { background: #6c5ce7; }
+
+        .peon-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .peon-option {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .peon-option img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 3px solid rgba(255,255,255,0.3);
+            padding: 8px;
+            transition: all 0.2s;
+        }
+
+        .peon-option img:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .peon-option img.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+            transform: scale(1.1);
+        }
+
+        .player-setup-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 16px;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .player-name-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+
+        .player-name-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .player-name-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .info-panel {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 16px;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .messages-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 12px;
+        }
+    </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="h-full overflow-auto bg-gradient-to-b from-blue-600 to-purple-700 p-4">
+   <div class="max-w-2xl mx-auto"><!-- Setup Screen -->
+    <div id="setupScreen" class="space-y-6">
+     <div class="text-center">
+      <h1 class="text-4xl font-bold text-white mb-2">🏝️ Juego de Isla</h1>
+      <p class="text-blue-100">Viaja desde la casilla 1 a la 130</p>
+     </div>
+     <div class="info-panel">
+      <h2 class="text-xl font-bold mb-4 text-white">Selecciona número de jugadores</h2>
+      <div class="setup-grid"><button class="btn btn-primary" onclick="selectPlayerCount(1)">1 Jugador</button> <button class="btn btn-primary" onclick="selectPlayerCount(2)">2 Jugadores</button> <button class="btn btn-primary" onclick="selectPlayerCount(3)">3 Jugadores</button> <button class="btn btn-primary" onclick="selectPlayerCount(4)">4 Jugadores</button> <button class="btn btn-primary" onclick="selectPlayerCount(5)">5 Jugadores</button>
+      </div>
+     </div>
+    </div><!-- Player Setup Screen -->
+    <div id="playerSetupScreen" class="hidden space-y-6">
+     <div class="text-center">
+      <h1 class="text-4xl font-bold text-white mb-2">⚙️ Configurar Jugadores</h1>
+      <p class="text-blue-100">Elige tu peón y nombre</p>
+     </div>
+     <div id="playerSetupForm" class="space-y-4"></div><button class="btn btn-primary w-full text-lg" onclick="startGameFromSetup()">¡Comienza el Juego!</button>
+    </div><!-- Game Screen -->
+    <div id="gameScreen" class="hidden space-y-4">
+     <div class="info-panel">
+      <div class="flex justify-between items-center mb-2">
+       <h2 class="text-2xl font-bold">Turno de <span id="currentPlayerName">Jugador</span></h2><button class="btn btn-secondary text-sm" onclick="showSetup()">Nuevo Juego</button>
+      </div>
+     </div><!-- Messages Log -->
+     <div id="messagesLog" class="messages-log"></div><!-- Dice and Controls -->
+     <div class="info-panel text-center space-y-4">
+      <div id="diceContainer" class="flex justify-center"><button id="diceBtn" class="dice" onclick="rollDice()">🎲</button>
+      </div>
+      <div id="diceResult" class="text-white font-bold text-xl hidden"></div><button id="endTurnBtn" class="btn btn-secondary w-full hidden" onclick="endTurn()">Finalizar Turno</button>
+     </div><!-- Players Status -->
+     <div class="info-panel">
+      <h3 class="text-white font-bold mb-3">Jugadores</h3>
+      <div id="playersContainer"></div>
+     </div><!-- Board -->
+     <div class="board-container" id="board"></div>
+     <div id="gameOverScreen" class="hidden text-center space-y-4">
+      <div class="bg-yellow-400 text-yellow-900 p-6 rounded-lg text-2xl font-bold">
+       🏆 ¡<span id="winnerName"></span> ha ganado!
+      </div><button class="btn btn-primary w-full" onclick="showSetup()">Jugar de Nuevo</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        const BOARD_SIZE = 130;
+        const COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'];
+        const COLORS_CLASS = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5'];
+        const PEON_COUNT = 12; // 12 peones disponibles
+
+        const specialEvents = [
+            { position: 5, type: 'delay', turns: 1, name: '⏱️', message: 'Esperas 1 turno' },
+            { position: 7, type: 'goto', target: 8, name: '🏝️', message: 'Entras a isla pequeña' },
+            { position: 14, type: 'delay', turns: 2, name: '⏱️', message: 'Esperas 2 turnos' },
+            { position: 20, type: 'goto', target: 22, name: '🚪', message: 'Entras en la Caberna' },
+            { position: 25, type: 'goto', target: 67, name: '🏝️', message: 'Continuas por casilla 67' },
+            { position: 31, type: 'tunnel', parity: true, even: 20, odd: 10, name: '🔀', message: 'Par o impar: toma la ruta' },
+            { position: 35, type: 'goto', target: 36, name: '🏝️', message: 'Entras por Playa🏖️' },
+            { position: 38, type: 'tunnel', parity: true, even: 20, odd: 10, name: '🔀', message: 'Par o impar: toma la ruta' },
+            { position: 40, type: 'goto', target: 41, name: '🧗', message: 'Entras por Acantilado' },
+            { position: 52, type: 'goto', target: 55, name: '🏚️', message: 'Entras por Pueblo Abandonado' },
+            { position: 56, type: 'goto', target: 57, name: '🌊', message: 'Continua por casilla 57' },
+            { position: 72, type: 'goto', target: 33, name: '💥', message: 'Camino derrumbado, caes al Mar (33).' },
+            { position: 73, type: 'goto', target: 33, name: '💥', message: 'Camino derrumbado, caes al Mar (33).' },
+            { position: 75, type: 'tunnel', parity: true, even: 81, odd: 88, name: '🔀', message: 'Par o impar: toma la ruta' },
+            { position: 81, type: 'tunnel', parity: true, even: 75, odd: 88, name: '🔀', message: 'Par o impar: toma la ruta' },
+            { position: 84, type: 'goto', target: 47, name: '💥', message: 'Despeñadero, a 47.' },
+            { position: 88, type: 'tunnel', parity: true, even: 81, odd: 75, name: '🔀', message: 'Par o impar: toma la ruta' },
+            { position: 96, type: 'tunnel', parity: true, even: 102, odd: 96, name: '🔀', message: 'Par o impar: toma la ruta' },
+            { position: 99, type: 'goto', target: 71, name: '💥', message: 'Camino derrumbado, caes al 71.' },
+            { position: 100, type: 'goto', target: 74, name: '💥', message: 'Camino derrumbado, caes al 74.' },
+            { position: 102, type: 'tunnel', parity: true, even: 102, odd: 96, name: '🔀', message: 'Par o impar: toma la ruta' },
+            { position: 105, type: 'goto', target: 77, name: '💥', message: 'Despeñadero, a 77.' },
+            { position: 108, type: 'tunnel', parity: true, even: 81, odd: 88, name: '🕳️', message: 'Foso' },
+            { position: 115, type: 'goto', target: 92, name: '💥', message: 'Despeñadero, a 92.' },
+            { position: 120, type: 'tunnel', parity: true, even: 75, odd: 88, name: '🕳️', message: 'Foso' },
+            { position: 125, type: 'tunnel', parity: true, even: 96, odd: 102, name: '🕳️', message: 'Foso' },
+            { position: 130, type: 'final', name: '🏁', message: '¡Has llegado a la meta!' }
+        ];
+
+        let gameState = {
+            players: [],
+            currentPlayer: 0,
+            gameActive: false,
+            turnsToSkip: {},
+            diceRolled: false,
+            gameId: Date.now().toString(),
+            playerSetups: [] // Guardará peón y nombre elegidos
+        };
+
+        function saveGameState() {
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        function loadGameState() {
+            const saved = localStorage.getItem('gameState');
+            if (saved) {
+                gameState = JSON.parse(saved);
+            }
+        }
+
+        function showMessage(msg) {
+            const log = document.getElementById('messagesLog');
+            const msgEl = document.createElement('div');
+            msgEl.className = 'message-box';
+            msgEl.textContent = msg;
+            log.insertBefore(msgEl, log.firstChild);
+            if (log.children.length > 5) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function updateDisplay() {
+            createBoard();
+            updatePlayersDisplay();
+        }
+
+        function createBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+
+            for (let i = 1; i <= BOARD_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                
+                // Cargar imagen de fondo
+                cell.style.backgroundImage = `url('https://lucasmaneirodelatm-dot.github.io/la-isla/public/img_board/${i}.svg')`;
+                
+                const special = specialEvents.find(e => e.position === i);
+                if (special) {
+                    cell.classList.add('special');
+                    cell.textContent = special.name;
+                } else {
+                    cell.textContent = i;
+                }
+
+                // Agregar fichas de jugadores
+                gameState.players.forEach((player, idx) => {
+                    if (player.position === i) {
+                        const token = document.createElement('div');
+                        token.className = `player-token ${COLORS_CLASS[idx]}`;
+                        
+                        if (player.peonNumber) {
+                            token.style.backgroundImage = `url('https://lucasmaneirodelatm-dot.github.io/la-isla/public/peon-${player.peonNumber}.png')`;
+                            token.style.background = `url('https://lucasmaneirodelatm-dot.github.io/la-isla/public/peon-${player.peonNumber}.png') center/contain no-repeat`;
+                            token.textContent = ''; // Sin texto si hay imagen
+                        } else {
+                            token.style.background = COLORS[idx];
+                            token.textContent = player.name.charAt(0); // Primera letra del nombre
+                        }
+                        
+                        cell.appendChild(token);
+                    }
+                });
+
+                board.appendChild(cell);
+            }
+        }
+
+        function updatePlayersDisplay() {
+            const container = document.getElementById('playersContainer');
+            container.innerHTML = '';
+
+            gameState.players.forEach((player, idx) => {
+                const card = document.createElement('div');
+                card.className = `player-card ${COLORS_CLASS[idx]} ${idx === gameState.currentPlayer ? 'active' : ''}`;
+                card.style.borderColor = COLORS[idx];
+                card.style.background = COLORS[idx] + '40';
+
+                // Avatar del peón
+                const avatar = document.createElement('div');
+                avatar.className = 'player-peon-avatar';
+                avatar.style.background = COLORS[idx];
+                
+                if (player.peonNumber) {
+                    avatar.style.backgroundImage = `url('https://lucasmaneirodelatm-dot.github.io/la-isla/public/peon-${player.peonNumber}.png')`;
+                } else {
+                    avatar.textContent = player.name.charAt(0);
+                }
+
+                // Información del jugador
+                const info = document.createElement('div');
+                info.className = 'player-info';
+                info.innerHTML = `<span class="text-white font-bold">${player.name}</span><br><span class="text-sm text-white opacity-75">Casilla ${player.position}</span>`;
+
+                card.appendChild(avatar);
+                card.appendChild(info);
+
+                if (gameState.turnsToSkip[player.id] && gameState.turnsToSkip[player.id] > 0) {
+                    const skipDiv = document.createElement('div');
+                    skipDiv.className = 'skip-indicator';
+                    skipDiv.textContent = `⏸️ Salta ${gameState.turnsToSkip[player.id]}`;
+                    card.appendChild(skipDiv);
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        function rollDice() {
+            if (!gameState.gameActive || gameState.diceRolled) return;
+
+            const player = gameState.players[gameState.currentPlayer];
+            if (gameState.turnsToSkip[player.id] && gameState.turnsToSkip[player.id] > 0) {
+                gameState.turnsToSkip[player.id]--;
+                showMessage(`⏸️ ${player.name} salta turno (${gameState.turnsToSkip[player.id]} restante)`);
+                gameState.diceRolled = true;
+                document.getElementById('diceBtn').disabled = true;
+                document.getElementById('endTurnBtn').classList.remove('hidden');
+                return;
+            }
+
+            const diceValue = Math.floor(Math.random() * 6) + 1;
+            const diceBtn = document.getElementById('diceBtn');
+            const diceResult = document.getElementById('diceResult');
+
+            diceBtn.textContent = diceValue;
+            diceResult.textContent = `¡Obtuviste ${diceValue}!`;
+            diceResult.classList.remove('hidden');
+            gameState.diceRolled = true;
+            diceBtn.disabled = true;
+
+            setTimeout(() => movePlayer(player, diceValue), 500);
+        }
+
+        function movePlayer(player, diceValue) {
+            let newPosition = player.position + diceValue;
+
+            // Aplicar reglas de rebote
+            if (newPosition > 7 && newPosition <= 26) {
+                const exceso = newPosition - 7;
+                newPosition = 26 + exceso;
+                showMessage(`🔙 ¡Te pasaste! ¡No has entrado en la isla! Continúas por 26 y avanzas ${exceso} más → parada ${newPosition}`);
+            } else if (newPosition > 21 && newPosition <= 60) {
+                const exceso = newPosition - 21;
+                newPosition = 60 + exceso;
+                showMessage(`Continúas por 60 y avanzas ${exceso} más → parada ${newPosition}`);
+            } else if (newPosition > 35 && newPosition <= 38) {
+                const exceso = newPosition - 35;
+                newPosition = 38 + exceso;
+                showMessage(`🔙 ¡Te pasaste! ¡No has entrado en la isla! Continúas por 38 y avanzas ${exceso} más → parada ${newPosition}`);
+            } else if (newPosition > 40 && newPosition <= 45) {
+                const exceso = newPosition - 40;
+                newPosition = 45 + exceso;
+                showMessage(`🔙 ¡Te pasaste! ¡No has entrado en la isla! Continúas por 45 y avanzas ${exceso} más → parada ${newPosition}`);
+            } else if (newPosition > 54 && newPosition <= 60) {
+                const exceso = newPosition - 54;
+                newPosition = 26 + exceso;
+                showMessage(`🔄 Continúas por 26 y avanzas ${exceso} más → parada ${newPosition}`);
+            } else if (newPosition > 57 && newPosition <= 87) {
+                const exceso = newPosition - 57;
+                newPosition = 87 + exceso;
+                showMessage(`Subes escaleras de 57 que conducen a 87 + ${exceso} → ${newPosition}`);
+            } else if (newPosition > 130) {
+                newPosition = 117;
+                showMessage(`🔙 ¡Te pasaste! Vas directamente a la casilla 117`);
+            }
+
+            player.position = newPosition;
+            showMessage(`${player.name} se mueve a la casilla ${newPosition}`);
+
+            if (newPosition === 130) {
+                gameState.gameActive = false;
+                document.getElementById('gameOverScreen').classList.remove('hidden');
+                document.getElementById('winnerName').textContent = player.name;
+                return;
+            }
+
+            setTimeout(() => checkSpecialEvent(player), 400);
+        }
+
+        function checkSpecialEvent(player) {
+            const special = specialEvents.find(e => e.position === player.position);
+
+            if (special) {
+                switch(special.type) {
+                    case 'delay':
+                        showMessage(`${special.name} ${special.message}`);
+                        gameState.turnsToSkip[player.id] = special.turns;
+                        break;
+
+                    case 'goto':
+                        showMessage(`${special.name} ${special.message}`);
+                        player.position = special.target;
+                        updateDisplay();
+                        setTimeout(() => checkSpecialEvent(player), 600);
+                        return;
+
+                    case 'tunnel':
+                        if (special.parity) {
+                            if (player.position % 2 === 0) {
+                                player.position = special.even;
+                                showMessage(`${special.name} ${special.message} (casilla par)`);
+                            } else {
+                                player.position = special.odd;
+                                showMessage(`${special.name} ${special.message} (casilla impar)`);
+                            }
+                        } else {
+                            player.position = special.target;
+                            showMessage(`${special.name} ${special.message}`);
+                        }
+                        updateDisplay();
+                        setTimeout(() => checkSpecialEvent(player), 600);
+                        return;
+
+                    case 'final':
+                        showMessage(`🏁 ${special.message}`);
+                        gameState.gameActive = false;
+                        document.getElementById('gameOverScreen').classList.remove('hidden');
+                        document.getElementById('winnerName').textContent = player.name;
+                        return;
+                }
+            }
+
+            updateDisplay();
+            document.getElementById('endTurnBtn').classList.remove('hidden');
+        }
+
+        function endTurn() {
+            gameState.diceRolled = false;
+            document.getElementById('diceBtn').disabled = false;
+            document.getElementById('diceResult').classList.add('hidden');
+            document.getElementById('endTurnBtn').classList.add('hidden');
+
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+            document.getElementById('currentPlayerName').textContent = gameState.players[gameState.currentPlayer].name;
+
+            updateDisplay();
+            saveGameState();
+        }
+
+        function startGame(numPlayers) {
+            gameState.players = [];
+            for (let i = 0; i < numPlayers; i++) {
+                gameState.players.push({
+                    id: 'player_' + i,
+                    name: `Jugador ${i + 1}`,
+                    position: 1
+                });
+                gameState.turnsToSkip[gameState.players[i].id] = 0;
+            }
+            gameState.currentPlayer = 0;
+            gameState.gameActive = true;
+            gameState.diceRolled = false;
+
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('messagesLog').innerHTML = '';
+
+            showMessage(`🎮 ¡Juego iniciado con ${numPlayers} jugador(es)!`);
+            document.getElementById('currentPlayerName').textContent = gameState.players[gameState.currentPlayer].name;
+
+            updateDisplay();
+            saveGameState();
+        }
+
+        function showSetup() {
+            document.getElementById('setupScreen').classList.remove('hidden');
+            document.getElementById('playerSetupScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+        }
+
+        function selectPlayerCount(numPlayers) {
+            gameState.playerSetups = [];
+            for (let i = 0; i < numPlayers; i++) {
+                gameState.playerSetups.push({
+                    id: 'player_' + i,
+                    name: `Jugador ${i + 1}`,
+                    peonNumber: null
+                });
+            }
+            
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('playerSetupScreen').classList.remove('hidden');
+            renderPlayerSetupForms();
+        }
+
+        function renderPlayerSetupForms() {
+            const form = document.getElementById('playerSetupForm');
+            form.innerHTML = '';
+
+            gameState.playerSetups.forEach((setup, idx) => {
+                const card = document.createElement('div');
+                card.className = `player-setup-card`;
+                card.style.borderLeftColor = COLORS[idx];
+                card.style.borderLeftWidth = '4px';
+                
+                let html = `<h3 class="font-bold text-lg mb-3">Jugador ${idx + 1}</h3>`;
+                
+                html += `<label class="block">Nombre:</label>`;
+                html += `<input type="text" class="player-name-input" id="name_${idx}" placeholder="Ingresa tu nombre" value="${setup.name}">`;
+                
+                html += `<label class="block mt-4">Elige tu peón:</label>`;
+                html += `<div class="peon-selector">`;
+                
+                for (let i = 1; i <= PEON_COUNT; i++) {
+                    const isSelected = setup.peonNumber === i ? 'selected' : '';
+                    html += `<div class="peon-option">
+                        <img src="https://lucasmaneirodelatm-dot.github.io/la-isla/public/peon-${i}.png" 
+                             class="peon-img ${isSelected}" 
+                             onclick="selectPeon(${idx}, ${i})"
+                             loading="lazy"
+                             onerror="console.error('Peon image failed:', this.src); this.style.background='#e5e7eb';">
+                    </div>`;
+                }
+                
+                html += `</div>`;
+                card.innerHTML = html;
+                form.appendChild(card);
+
+                // Actualizar el nombre cuando se escribe
+                document.getElementById(`name_${idx}`).addEventListener('change', (e) => {
+                    gameState.playerSetups[idx].name = e.target.value || `Jugador ${idx + 1}`;
+                });
+            });
+        }
+
+        function selectPeon(playerIdx, peonNumber) {
+            gameState.playerSetups[playerIdx].peonNumber = peonNumber;
+            
+            // Actualizar visualmente el selector
+            const images = document.querySelectorAll('.peon-img');
+            images.forEach((img, idx) => {
+                if (Math.floor(idx / PEON_COUNT) === playerIdx) {
+                    img.classList.remove('selected');
+                }
+            });
+            
+            // Mostrar selección
+            const allPeonImgs = document.querySelectorAll(`#playerSetupForm .peon-img`);
+            let count = 0;
+            allPeonImgs.forEach((img, idx) => {
+                if (idx >= playerIdx * PEON_COUNT && idx < (playerIdx + 1) * PEON_COUNT) {
+                    if ((idx - playerIdx * PEON_COUNT + 1) === peonNumber) {
+                        img.classList.add('selected');
+                    }
+                }
+            });
+        }
+
+        function startGameFromSetup() {
+            // Validar que todos los jugadores tengan peón seleccionado
+            const incomplete = gameState.playerSetups.find(p => !p.peonNumber);
+            if (incomplete) {
+                showMessage('❌ Por favor selecciona un peón para cada jugador');
+                return;
+            }
+
+            gameState.players = [];
+            gameState.playerSetups.forEach((setup, idx) => {
+                gameState.players.push({
+                    id: setup.id,
+                    name: setup.name,
+                    peonNumber: setup.peonNumber,
+                    position: 1
+                });
+                gameState.turnsToSkip[setup.id] = 0;
+            });
+
+            gameState.currentPlayer = 0;
+            gameState.gameActive = true;
+            gameState.diceRolled = false;
+
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('playerSetupScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('messagesLog').innerHTML = '';
+
+            showMessage(`🎮 ¡Juego iniciado con ${gameState.players.length} jugador(es)!`);
+            document.getElementById('currentPlayerName').textContent = gameState.players[gameState.currentPlayer].name;
+
+            updateDisplay();
+            saveGameState();
+        }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d72d36c2303cc00',t:'MTc3MjY0NzcwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
